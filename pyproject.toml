@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "deep-sdf"
+version = "0.1.0"
+description = "Deep SDF Re-Implementation"
+authors = ["Sarvesh Mayilvahanan"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.23.0"
+torch = "^2.0.1"
+pyyaml = "^6.0.1"
+
