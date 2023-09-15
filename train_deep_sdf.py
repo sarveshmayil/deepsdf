@@ -79,7 +79,7 @@ def main(args, save_dir, visualize):
     )
 
     if visualize:
-        loss_log = []
+        loss_log = np.zeros((n_epochs,))
 
     decoder.train()
     pbar = tqdm(total=n_epochs, desc="Deep SDF Training")
@@ -123,7 +123,7 @@ def main(args, save_dir, visualize):
                 batch_split_loss.backward()
 
             if visualize:
-                loss_log.append(batch_loss / args['batch_split'])
+                loss_log[epoch] = batch_loss.detach().cpu() / args['batch_split']
 
             optimizer.step()
 
@@ -134,7 +134,6 @@ def main(args, save_dir, visualize):
         pbar.update(1)
 
     if visualize:
-        print(loss_log)
         plt.plot(np.arange(n_epochs), loss_log, 'b-')
         plt.xlabel("epoch")
         plt.ylabel("loss")
