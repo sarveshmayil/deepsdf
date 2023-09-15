@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.8"
 numpy = "^1.23.0"
-torch = "^2.0.1"
+torch = "^2.0.0, !=2.0.1"
 pyyaml = "^6.0.1"
 tqdm = "^4.66.1"
 
