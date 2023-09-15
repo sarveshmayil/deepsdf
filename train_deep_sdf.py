@@ -2,6 +2,7 @@ import yaml
 import json
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import DataLoader
 import os
@@ -27,18 +28,28 @@ def get_args():
         help="Path to directory where checkpoints are saved"
     )
 
-    parser.parse_args()
+    parser.add_argument(
+        "--visualize", "-v",
+        dest="visualize",
+        action="store_true",
+        help="Flag for visualization of loss"
+    )
+
+    args = parser.parse_args()
+    return args
 
 def save_model(directory, filename, model, epoch):
     torch.save(model.state_dict(), os.path.join(directory, filename+"%d.pth" % (epoch)))
 
-def main(args, save_dir):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+def main(args, save_dir, visualize):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
     latent_dim = args['latent_dim']
     network_kwargs = args['network_specs']
     n_epochs = args['epochs']
 
     os.makedirs(save_dir, exist_ok=True)
+    os.makedirs(os.path.join(save_dir, "decoder"), exist_ok=True)
+    os.makedirs(os.path.join(save_dir, "latent_vecs"), exist_ok=True)
 
     with open(args['train_test_split'], 'r') as file:
         training_paths = json.load(file)['train']
@@ -50,7 +61,7 @@ def main(args, save_dir):
     decoder = Decoder(latent_dim, **network_kwargs).to(device)
 
     latent_vecs = torch.nn.Embedding(len(dataset), latent_dim, max_norm=args['latent_vec_bound'], device=device)
-    torch.nn.init.normal_(latent_vecs, mean=0.0, std=1.0 / np.sqrt(latent_dim))
+    torch.nn.init.normal_(latent_vecs.weight.data, mean=0.0, std=1.0 / np.sqrt(latent_dim))
 
     l1_loss = torch.nn.L1Loss(reduction="sum")
 
@@ -67,6 +78,9 @@ def main(args, save_dir):
         ]
     )
 
+    if visualize:
+        loss_log = []
+
     decoder.train()
     pbar = tqdm(total=n_epochs, desc="Deep SDF Training")
     for epoch in range(n_epochs):
@@ -80,8 +94,10 @@ def main(args, save_dir):
 
         for data, obj_idxs in data_loader:
             data.requires_grad = False
+            data = data.reshape(-1, 4)  # stack inputs into 2D
             points = data[:,:3]  # get [x y z] coordinates
-            sdf_true = torch.clamp(data[:,-1], -args['sdf_clamping_dist'], args['sdf_clamping_dist'])  # get ground truth SDF value and clamp between provided values
+            sdf_true = torch.clamp(data[:,-1], -args['sdf_clamping_dist'], args['sdf_clamping_dist']).unsqueeze(1)  # get ground truth SDF value and clamp between provided values
+            obj_idxs = obj_idxs.flatten()
             n_samples = data.shape[0]
 
             # chunk data
@@ -106,7 +122,10 @@ def main(args, save_dir):
                 batch_loss += batch_split_loss
                 batch_split_loss.backward()
 
-        optimizer.step()
+            if visualize:
+                loss_log.append(batch_loss / args['batch_split'])
+
+            optimizer.step()
 
         if epoch % args['save_freq'] == 0:
             save_model(os.path.join(save_dir, "decoder"), "decoder", decoder, epoch)
@@ -114,9 +133,16 @@ def main(args, save_dir):
 
         pbar.update(1)
 
+    if visualize:
+        print(loss_log)
+        plt.plot(np.arange(n_epochs), loss_log, 'b-')
+        plt.xlabel("epoch")
+        plt.ylabel("loss")
+        plt.show()
+
 if __name__ == "__main__":
     args = get_args()
     with open(args.config, 'r') as file:
         config_args = yaml.safe_load(file)
 
-    main(config_args, args.save_dir)
+    main(config_args, args.save_dir, args.visualize)
