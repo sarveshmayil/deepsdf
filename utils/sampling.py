@@ -46,11 +46,11 @@ class SDF_Dataset(torch.utils.data.Dataset):
         """
         path = self.sdf_paths[idx]
         point_sdf_pairs = self.load_samples(path)
-        samples = torch.from_numpy(point_sdf_pairs).to(self.device)
+        samples = torch.from_numpy(point_sdf_pairs).to(self.device).to(torch.float32)
         return samples, torch.full((samples.shape[0],1), idx, device=self.device)
 
     def load_samples(self, path:str) -> np.ndarray:
-        with open(os.path.join(path, "data.npy")) as file:
+        with open(os.path.join(path, "data.npy"), 'rb') as file:
             point_sdf_pairs = np.load(file)  # (n_points, 4)
 
         return point_sdf_pairs
