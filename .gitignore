@@ -1,0 +1,7 @@
+*.mtl
+*.obj
+*.binvox
+data/sdf/
+data/shapenet/
+
+__pycache__/
