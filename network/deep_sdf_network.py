@@ -24,7 +24,6 @@ class Decoder(nn.Module):
         self.dropout_prob = dropout
         self.relu = nn.ReLU()
 
-        self.layers = []
         for i in range(0, self.n_layers-1):
             in_dim = hidden_dims[i]
             if i + 1 == latent_in:
@@ -33,9 +32,9 @@ class Decoder(nn.Module):
                 out_dim = hidden_dims[i+1]
             
             if weight_norm:
-                self.layers.append(nn.utils.weight_norm(nn.Linear(in_dim, out_dim)))
+                setattr(self, "linear"+str(i), nn.utils.weight_norm(nn.Linear(in_dim, out_dim)))
             else:
-                self.layers.append(nn.Linear(in_dim, out_dim))
+                setattr(self, "linear"+str(i), nn.Linear(in_dim, out_dim))
 
     def forward(self, input:torch.Tensor) -> torch.Tensor:
         """
@@ -49,7 +48,7 @@ class Decoder(nn.Module):
         out = input
         
         for i in range(0, self.n_layers-1):
-            out = self.layers[i](out)  # pass through ith layer
+            out = getattr(self, "linear"+str(i))(out)  # pass through ith layer
             
             if i + 1 == self.latent_in:
                 out = torch.cat((out, input), 1)  # stack latent vector and query
