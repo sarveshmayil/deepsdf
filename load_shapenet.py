@@ -5,7 +5,7 @@ from tqdm import tqdm
 import numpy as np
 import trimesh
 
-from data.sampling import MeshSampler
+from utils.sampling import MeshSampler
 
 def get_args():
     parser = argparse.ArgumentParser(description="ShapeNet v2 data preprocessing")
