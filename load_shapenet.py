@@ -3,6 +3,7 @@ import argparse
 from glob import glob
 from tqdm import tqdm
 import numpy as np
+import matplotlib.pyplot as plt
 import trimesh
 
 from utils.sampling import MeshSampler
@@ -14,6 +15,13 @@ def get_args():
         dest="data_dir",
         required=True,
         help="Path to directory with downloaded ShapeNet models"
+    )
+
+    parser.add_argument(
+        "--visualize", "-v",
+        dest="visualize",
+        action="store_true",
+        help="Flag for visualization of samples"
     )
 
     args = parser.parse_args()
@@ -38,6 +46,11 @@ def main(args):
         point_sdf_pairs = get_mesh_sdf_samples(mesh_path)
         with open(os.path.join(save_path, 'data.npy'), 'wb') as file:
             np.save(file, point_sdf_pairs)
+
+        if args.visualize:
+            fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+            ax.scatter(point_sdf_pairs[:,0], point_sdf_pairs[:,1], point_sdf_pairs[:,2], c=point_sdf_pairs[:,3], cmap="plasma", s=30)
+            plt.show()
         
 if __name__ == "__main__":
     args = get_args()
