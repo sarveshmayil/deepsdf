@@ -21,10 +21,18 @@ latent_vec_lr_schedule:
 
 sdf_clamping_dist: 0.1
 
+# Training parameters
 epochs: 2000
 batch_size: 64
 batch_split: 8
 save_freq: 500
+
+# Reconstruction parameters
+reconstruct_epochs: 800
+reconstruct_lr_schedule:
+  start: 0.0005
+  decay: 0.1
+  interval: 400
 
 data_dir: "data/sdf/03797390"
 train_test_split: "config/03797390/split.json"
