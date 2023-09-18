@@ -19,6 +19,13 @@ def get_args():
         required=True,
         help="Path to trained Deep SDF model (.pth)"
     )
+
+    parser.add_argument(
+        "--latent-vec", "-l",
+        dest="latent_vec_path",
+        default=None,
+        help="Path to learned latent vector (.pth)"
+    )
     
     parser.add_argument(
         "--config",
@@ -112,9 +119,38 @@ def main(trained_model_path, args, save_dir, visualize):
             scene.add_geometry(reconstruct_mesh)
             scene.show()
 
+def main_learned_code(trained_model_path, latent_vec_path, args):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
+    latent_dim = args['latent_dim']
+    network_kwargs = args['network_specs']
+
+    decoder = Decoder(latent_dim, **network_kwargs)
+    decoder.load_state_dict(torch.load(trained_model_path))
+    decoder = decoder.to(device)
+    decoder.eval()
+
+    latent_vecs = torch.load(latent_vec_path)['weight']
+
+    if latent_vecs.ndim > 1:
+        for i in range(latent_vecs.shape[0]):
+            vertices, faces = create_mesh(decoder, latent_vecs[i], N=128)
+            scene = trimesh.Scene()
+            reconstruct_mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
+            scene.add_geometry(reconstruct_mesh)
+            scene.show()
+    else:
+        vertices, faces = create_mesh(decoder, latent_vecs, N=128)
+        scene = trimesh.Scene()
+        reconstruct_mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
+        scene.add_geometry(reconstruct_mesh)
+        scene.show()
+
 if __name__ == "__main__":
     args = get_args()
     with open(args.config, 'r') as file:
         config_args = yaml.safe_load(file)
 
-    main(args.trained_model_path, config_args, args.save_dir, args.visualize)
+    if args.latent_vec_path is not None:
+        main_learned_code(args.trained_model_path, args.latent_vec_path, config_args)
+    else:
+        main(args.trained_model_path, config_args, args.save_dir, args.visualize)
