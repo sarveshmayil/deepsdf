@@ -53,6 +53,7 @@ def main(trained_model_path, args, save_dir, visualize):
     latent_dim = args['latent_dim']
     network_kwargs = args['network_specs']
     n_epochs = args['reconstruct_epochs']
+    n_train_samples = args['n_train_samples'] if 'n_train_samples' in args else None
 
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(os.path.join(save_dir, "latent_vecs"), exist_ok=True)
@@ -61,7 +62,7 @@ def main(trained_model_path, args, save_dir, visualize):
         test_paths = json.load(file)['test']
         test_paths = [os.path.join(args['data_dir'], path) for path in test_paths]
 
-    dataset = SDF_Dataset(test_paths, device)
+    dataset = SDF_Dataset(test_paths, n_train_samples, device)
 
     decoder = Decoder(latent_dim, **network_kwargs)
     decoder.load_state_dict(torch.load(trained_model_path))
