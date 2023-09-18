@@ -39,13 +39,14 @@ def get_args():
     return args
 
 def save_model(directory, filename, model, epoch):
-    torch.save(model.state_dict(), os.path.join(directory, filename+"%d.pth" % (epoch)))
+    torch.save(model.state_dict(), os.path.join(directory, filename+"%d.pth" % (epoch+1)))
 
 def main(args, save_dir, visualize):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
     latent_dim = args['latent_dim']
     network_kwargs = args['network_specs']
     n_epochs = args['epochs']
+    n_train_samples = args['n_train_samples'] if 'n_train_samples' in args else None
 
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(os.path.join(save_dir, "decoder"), exist_ok=True)
@@ -55,7 +56,7 @@ def main(args, save_dir, visualize):
         training_paths = json.load(file)['train']
         training_paths = [os.path.join(args['data_dir'], path) for path in training_paths]
 
-    dataset = SDF_Dataset(training_paths, device)
+    dataset = SDF_Dataset(training_paths, n_train_samples, device)
     data_loader = DataLoader(dataset, batch_size=args['batch_size'], shuffle=True)
 
     decoder = Decoder(latent_dim, **network_kwargs).to(device)
@@ -127,7 +128,7 @@ def main(args, save_dir, visualize):
 
             optimizer.step()
 
-        if epoch % args['save_freq'] == 0:
+        if (epoch+1) % args['save_freq'] == 0:
             save_model(os.path.join(save_dir, "decoder"), "decoder", decoder, epoch)
             save_model(os.path.join(save_dir, "latent_vecs"), "latent_vecs", latent_vecs, epoch)
 
