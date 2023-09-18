@@ -8,8 +8,10 @@ def create_mesh(decoder, latent_vec, N:int=256, batch_size:int=32768):
     decoder.eval()
 
     # Marching Cubes Algorithm
-    voxel_origin = torch.LongTensor([-1, -1, -1])
-    voxel_size = 2.0 / (N - 1)
+    # Create voxels from (-1 to +1) in all 3 dimensions
+    box_side_len = 2.0
+    voxel_origin = torch.LongTensor([-box_side_len/2, -box_side_len/2, -box_side_len/2])
+    voxel_size = box_side_len / (N - 1)
 
     n_samples = N**3
 
@@ -35,9 +37,7 @@ def create_mesh(decoder, latent_vec, N:int=256, batch_size:int=32768):
 
     sdf_pred = samples[:,3].reshape(N,N,N)
     sdf_grid = sdf_pred.cpu().numpy()
-    # print(sdf_grid.min(), sdf_grid.max())
-    # vertices, faces, _, _ = marching_cubes(sdf_grid, level=0.0, spacing=[voxel_size, voxel_size, voxel_size])
-    vertices, faces, _, _ = marching_cubes(sdf_grid, spacing=[voxel_size, voxel_size, voxel_size])
+    vertices, faces, _, _ = marching_cubes(sdf_grid, level=0.0, spacing=[voxel_size, voxel_size, voxel_size])
 
     return vertices, faces
         
