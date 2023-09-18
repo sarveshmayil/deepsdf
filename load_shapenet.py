@@ -30,7 +30,7 @@ def get_args():
     return args
 
 def get_mesh_sdf_samples(mesh_path, n_samples):
-    mesh = trimesh.load(mesh_path, file_type='obj', force='mesh', skip_materials=True)
+    mesh = trimesh.load(mesh_path, force='mesh', skip_materials=True)
     mesh_sampler = MeshSampler(mesh, n_points=n_samples)
     points, sdf_values = mesh_sampler.get_samples()
     pairs = np.concatenate((points, sdf_values[:,None]), axis=1)  # join [x y z] and SDF together
@@ -52,6 +52,7 @@ def main(args, visualize):
             np.save(file, point_sdf_pairs)
 
         if visualize:
+            # plt.hist(point_sdf_pairs[:,3], density=True)
             fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
             ax.scatter(point_sdf_pairs[:,0], point_sdf_pairs[:,1], point_sdf_pairs[:,2], c=point_sdf_pairs[:,3], cmap="plasma", s=30)
             plt.show()

@@ -1045,6 +1045,17 @@ files = [
 ]
 
 [[package]]
+name = "pyglet"
+version = "1.5.27"
+description = "Cross-platform windowing and multimedia library"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyglet-1.5.27-py3-none-any.whl", hash = "sha256:7ce2eb5a299cda92fcc099f533520cdaa2f157a175d6c1442a2ae4d769284d2d"},
+    {file = "pyglet-1.5.27.zip", hash = "sha256:4d00e067451f3b10fd51b69764fddab65444372a2da344ee2b35f0a8e6ebf005"},
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.1.1"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -1788,4 +1799,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "6f0cecfb6f7505ed66a9d3850fa64ffce14f38a900e14c686b99f1ff648bbc76"
+content-hash = "fb8fad1231071b4de275dbd728261ee51fedc06c7d8949a8ba5c415e5e9bc211"

@@ -35,13 +35,20 @@ def get_args():
         help="Flag for visualization of loss"
     )
 
+    parser.add_argument(
+        "--no-save",
+        dest="save",
+        action="store_false",
+        help="Flag for not saving trained models/latent vectors"
+    )
+
     args = parser.parse_args()
     return args
 
 def save_model(directory, filename, model, epoch):
     torch.save(model.state_dict(), os.path.join(directory, filename+"%d.pth" % (epoch+1)))
 
-def main(args, save_dir, visualize):
+def main(args, save_dir, visualize, save_models):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
     latent_dim = args['latent_dim']
     network_kwargs = args['network_specs']
@@ -115,6 +122,7 @@ def main(args, save_dir, visualize):
                 sdf_pred = decoder(inp)
                 sdf_pred = torch.clamp(sdf_pred, -args['sdf_clamping_dist'], args['sdf_clamping_dist'])  # clamp predictions to match GT
                 batch_split_loss = l1_loss(sdf_pred, sdf_true[i]) / n_samples
+                # print(sdf_pred.min(), sdf_true[i].min())
 
                 if args['latent_vec_regularization']:
                     latent_vec_reg_loss = args['latent_vec_reg_lambda'] * min(1, epoch/100) * torch.sum(torch.norm(batch_latent_vecs, p=2, dim=1)) / n_samples
@@ -128,7 +136,7 @@ def main(args, save_dir, visualize):
 
             optimizer.step()
 
-        if (epoch+1) % args['save_freq'] == 0:
+        if (epoch+1) % args['save_freq'] == 0 and save_models:
             save_model(os.path.join(save_dir, "decoder"), "decoder", decoder, epoch)
             save_model(os.path.join(save_dir, "latent_vecs"), "latent_vecs", latent_vecs, epoch)
 
@@ -145,4 +153,4 @@ if __name__ == "__main__":
     with open(args.config, 'r') as file:
         config_args = yaml.safe_load(file)
 
-    main(config_args, args.save_dir, args.visualize)
+    main(config_args, args.save_dir, args.visualize, args.save)
