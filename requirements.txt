@@ -1,0 +1,19 @@
+numpy >= 1.23.0
+torch == 2.0.0
+pyyaml >= 6.0.1
+tqdm >= 4.66.1
+scikit-image >= 0.21.0
+
+# trimesh and it's dependencies
+trimesh >= 3.23.5
+pillow >= 10.0.0
+rtree >= 1.0.1
+scipy >= 1.5.2
+shapely >= 2.0.1
+embree >= 0.0.4
+requests >= 2.31.0
+setuptools >= 68.2.2
+jsonschema >= 4.19.0
+chardet >= 5.2.0
+matplotlib >= 3.5.0
+pyglet >= 1.5.10
