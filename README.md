@@ -29,6 +29,17 @@ which will compute ground truth SDF values for sampled 3D points and save them f
 
 Use the training script to train the DeepSDF model
 ```
-python3 train_deep_sdf.py --config /path/to/config/file
+python3 train_deep_sdf.py --config /path/to/config/file -v
 ```
-which will save the trained model as well as the learned latent vectors at the specified intervals. 
+which will save the trained model as well as the learned latent vectors at the specified intervals.
+
+## Reconstruction
+
+Use the reconstruction script to visualize the predicted surface of the object using the trained DeepSDF model
+```
+# For reconstruction of test objects (also learns latent vectors)
+python3 reconstruct.py --model /path/to/trained/model --config /path/to/config/file -v
+
+# For reconstruction of train objects using learned latent vectors
+python3 reconstruct.py --model /path/to/trained/model --latent-vec /path/to/learned/latent/vectors --config /path/to/config/file -v
+```
