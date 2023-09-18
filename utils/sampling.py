@@ -8,15 +8,16 @@ import torch
 from typing import Tuple, List
 
 class MeshSampler:
-    def __init__(self, mesh:trimesh.Trimesh, n_points:int=500000, dist_stdv:float=0.0005**0.5) -> None:
+    def __init__(self, mesh:trimesh.Trimesh, n_points:int=500000, dist_stdv:List[float]=[0.005**0.5, 0.0005**0.5]) -> None:
         self.mesh = mesh
         self.n_points = n_points
         self.dist_stdv = dist_stdv
 
-    def get_samples(self) -> Tuple[np.ndarray, np.ndarray]:
-        points, _ = sample_surface(self.mesh, self.n_points)  # (n_points, 3)
-        points += np.random.normal(0.0, self.dist_stdv, size=points.shape)  # add random noise to offset points from surface
-        
+    def get_samples(self) -> Tuple[np.ndarray, np.ndarray]:        
+        points = self._sample_uniform(int(self.n_points*0.05))
+        for sigma in self.dist_stdv:
+            points = np.concatenate((points, self._sample_surface(sigma, int(self.n_points*0.95/len(self.dist_stdv)))), axis=0)
+
         sdf_values = -signed_distance(self.mesh, points)  # (n_points,)
 
         # filter out any NaN SDF values
@@ -25,6 +26,14 @@ class MeshSampler:
         sdf_values = sdf_values[~mask]
 
         return points, sdf_values
+    
+    def _sample_uniform(self, n_points) -> np.ndarray:
+        return np.random.uniform(-1.0, 1.0, (n_points, 3))
+    
+    def _sample_surface(self, sigma, n_points) -> np.ndarray:
+        points, _ = sample_surface(self.mesh, n_points)  # (n_points, 3)
+        points += np.random.normal(0.0, sigma, size=points.shape)  # add random noise to offset points from surface
+        return points
     
 
 class SDF_Dataset(torch.utils.data.Dataset):
