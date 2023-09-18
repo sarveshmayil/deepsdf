@@ -2,6 +2,8 @@
 
 This is a re-implementation of the CVPR '19 paper "DeepSDF: Learning Continuous Signed Distance Functions for Shape Representation" by Park et al. [Paper](http://openaccess.thecvf.com/content_CVPR_2019/html/Park_DeepSDF_Learning_Continuous_Signed_Distance_Functions_for_Shape_Representation_CVPR_2019_paper.html)
 
+![](https://github.com/sarveshmayil/deepsdf/blob/main/assets/train_result.gif)
+
 ## Setup
 
 The python setup uses `poetry` which can be installed using
