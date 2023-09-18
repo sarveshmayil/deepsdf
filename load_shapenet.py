@@ -2,7 +2,6 @@ import os
 import yaml
 import json
 import argparse
-from glob import glob
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,6 +29,7 @@ def get_args():
     return args
 
 def get_mesh_sdf_samples(mesh_path, n_samples):
+    # Load mesh from provided path and sample points
     mesh = trimesh.load(mesh_path, force='mesh', skip_materials=True)
     mesh_sampler = MeshSampler(mesh, n_points=n_samples)
     points, sdf_values = mesh_sampler.get_samples()
@@ -47,12 +47,19 @@ def main(args, visualize):
         save_path = os.path.join(args['data_dir'], subdir[-3])
         os.makedirs(save_path, exist_ok=True)
 
+        # Generate SDF samples (and corresponding 3D coordinates)
         point_sdf_pairs = get_mesh_sdf_samples(mesh_path, args['n_samples'])
-        with open(os.path.join(save_path, 'data.npy'), 'wb') as file:
-            np.save(file, point_sdf_pairs)
+
+        pos_idxs = point_sdf_pairs[:,3] >= 0
+        
+        # Save positive and negative SDF values separately (to get more even sampling later)
+        with open(os.path.join(save_path, 'pos_sdf.npy'), 'wb') as file:
+            np.save(file, point_sdf_pairs[pos_idxs])
+        
+        with open(os.path.join(save_path, 'neg_sdf.npy'), 'wb') as file:
+            np.save(file, point_sdf_pairs[~pos_idxs])
 
         if visualize:
-            # plt.hist(point_sdf_pairs[:,3], density=True)
             fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
             ax.scatter(point_sdf_pairs[:,0], point_sdf_pairs[:,1], point_sdf_pairs[:,2], c=point_sdf_pairs[:,3], cmap="plasma", s=30)
             plt.show()

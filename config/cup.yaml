@@ -16,7 +16,7 @@ epochs: 2000
 batch_size: 64
 batch_split: 8
 save_freq: 500
-n_train_samples: 5000
+samples_per_scene: 8000
 network_lr_schedule:
   start: 0.0005
   decay: 0.5
